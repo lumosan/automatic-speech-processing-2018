@@ -1,0 +1,1419 @@
+\documentclass[twoside,a4paper,titlepage]{article}
+\usepackage{array,amsmath,amssymb,rotating,epsfig,fancyheadings}
+
+
+\newcommand{\mat}[1]{{\tt >> #1} \\}
+\newcommand{\com}[1]{{\tt #1}}
+\newcommand{\expl}[1]{%
+\begin{turn}{180}%
+\parbox{\textwidth}{\em #1}%
+\end{turn}%
+}
+\newcommand{\tit}[1]{{\noindent \bf #1 \\}}
+\newcommand{\tab}{\hspace{1em}}
+
+\setlength{\hoffset}{-1in}
+\setlength{\voffset}{-1in}
+
+\setlength{\topskip}{0cm}
+\setlength{\headheight}{0cm}
+\setlength{\headsep}{0cm}
+
+\setlength{\textwidth}{16cm}
+\setlength{\evensidemargin}{2.5cm}
+\setlength{\oddsidemargin}{2.5cm}
+
+\setlength{\textheight}{24.7cm}
+\setlength{\topmargin}{1.5cm}
+\setlength{\headheight}{0.5cm}
+\setlength{\headsep}{0.5cm}
+
+\pagestyle{fancyplain}
+
+\begin{document}
+
+\begin{titlepage}
+\setcounter{page}{-1}
+
+\centerline{Ecole Polytechnique F\'ed\'erale de Lausanne}
+
+\vspace{5cm}
+
+\begin{center}
+\huge
+Session 1/2\,: \\
+Introduction to Gaussian Statistics \\
+and Statistical Pattern Recognition
+\end{center}
+
+\vfill
+
+\centerline{\includegraphics[width=7cm]{cover.eps.gz}}
+
+\vfill
+
+\noindent
+\begin{tabular}{lll}
+Course\,: & Speech processing and speech recognition & \\
+& & \\
+Teacher\,: & Prof. Herv\'e Bourlard \hspace{1cm} & {\tt bourlard@idiap.ch} \\
+& & \\
+Assistants\,: & Hemant Misra & {\tt misra@idiap.ch}\\
+ & Mathew Magimai-Doss & {\tt mathew@idiap.ch} 
+\end{tabular}
+
+\end{titlepage}
+
+\thispagestyle{empty}
+%%%%%%%%%
+%%%%%%%%%
+\section*{Guidelines}
+%%%%%%%%%
+%%%%%%%%%
+The following lab manual is structured as follows\,:
+\begin{itemize}
+\item each section corresponds to a theme
+\item each subsection corresponds to a separate experiment.
+\end{itemize}
+The subsections begin with useful formulas and definitions that will be put
+in practice during the experiments. These are followed by the description
+of the experiment and by an example of how to realize it in {\sc Matlab}.
+
+If you follow the examples literally, you will be able to progress into the
+lab session without worrying about the experimental implementation
+details. If you have ideas for better {\sc Matlab} implementations, you are
+welcome to put them in practice provided you don't loose too much time\,:
+remember that a lab session is no more than 3 hours long.
+
+The subsections also contain questions that you should think about.
+Corresponding answers are given right after, in case of problem. You can
+read them right after the question, {\em but}\,: the purpose of this lab is
+to make you
+
+\medskip
+\centerline{\LARGE \bf Think !}
+\medskip
+
+If you get lost with some of the questions or some of the explanations, DO
+ASK the assistants or the teacher for help\,: they are here to make the course
+understood. There is no such thing as a stupid question, and the only
+obstacle to knowledge is laziness.
+
+\bigskip
+Have a nice lab;
+
+\hfill Teacher \& Assistants \hspace{2cm}
+
+
+\vfill
+%%%%%%%%%
+%%%%%%%%%
+\section*{Before you begin...}
+%%%%%%%%%
+%%%%%%%%%
+If this lab manual has been handed to you as a hardcopy\,:
+\begin{enumerate}
+\item get the lab package from \\
+	\hspace{2cm}{\tt ftp.idiap.ch/pub/sacha/labs/Session1.tgz}
+\item un-archive the package\,: \\
+	{\tt \% gunzip Session1.tgz \\
+	\% tar xvf Session1.tar}
+\item change directory\,: \\
+	{\tt \% cd session1}
+\item start {\sc Matlab}\,: \\
+	{\tt \% matlab }
+\end{enumerate}
+Then go on with the experiments...
+
+
+\vspace{1cm}
+
+{\scriptsize
+\noindent
+This document was created by\,: Sacha Krstulovi\'c ({\tt sacha@idiap.ch}).
+
+\noindent
+This document is currently maintained by\,: Sacha Krstulovi\'c ({\tt sacha@idiap.ch}). Last modification on \today.
+
+\noindent
+This document is part of the package {\tt Session4.tgz} available by ftp as\,: {\tt ftp.idiap.ch/pub/sacha/labs/Session1.tgz} .
+}
+
+\clearpage
+
+\tableofcontents
+
+\bigskip
+%\clearpage
+%%%%%%%%%
+%%%%%%%%%
+\section{Gaussian statistics}
+%%%%%%%%%
+%%%%%%%%%
+
+%%%%%%%%%
+\subsection{Samples from a Gaussian density}
+\label{samples}
+%%%%%%%%%
+
+\subsubsection*{Useful formulas and definitions\,:}
+\begin{itemize}
+\item[-] The {\em Gaussian probability density function} (Gaussian pdf) for
+the $d$-dimensional random variable $x \circlearrowleft {\cal
+N}(\mu,\Sigma)$ (i.e. variable $x$ following the Gaussian, or Normal,
+probability law) is given by\,:
+\[
+g_{(\mu,\Sigma)}(x) = \frac{1}{\sqrt{2\pi}^d \sqrt{\det\left(\Sigma\right)}}
+\, e^{-\frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu)}
+\]
+where $\mu$ is the mean vector and $\Sigma$ is the variance-covariance
+matrix. $\mu$ and $\Sigma$ are the {\em parameters} of the Gaussian
+distribution. {\em Speech features} (also referred as {\em acoustic
+vectors}) are examples of $d$-dimensional variables, and it is usually
+assumed that they follow a Gaussian distribution.
+%
+\item[-] If $x \circlearrowleft {\cal N}(0,I)$ ($x$ follows a normal law
+with zero mean and unit variance; $I$ denotes the identity matrix), and if
+$y = \sqrt{\Sigma} \, x + \mu$, then $y \circlearrowleft {\cal
+N}(\mu,\Sigma)$.
+%
+\item[-] $\sqrt{\Sigma}$ defines the {\em standard deviation} of the random
+variable $x$ ({\em \'ecart-type} in French). Beware\,: this square root is
+meant in the {\em matrix sense}.
+\end{itemize}
+
+\subsubsection*{Experiment\,:}
+Generate a sample $X$ of $N$ points, i.e. $X=\{x_1, x_2,\cdots,x_N\}$, with
+$N=10000$, coming from a 2-dimensional Gaussian process that has mean\,:
+\[
+\mu = \left( \begin{array}{c} 730 \\ 1090 \end{array} \right)
+\]
+and variance\,:
+	\begin{enumerate}
+	%%%%%
+	\item 8000 for both dimensions ({\em spherical process}) (sample $X_1$)\,:
+		\[
+		\Sigma_1 = \left[ \begin{array}{cc}
+						8000 & 0 \\
+						0    & 8000
+						\end{array} \right]
+		\]
+	%%%%%
+	\item expressed as a {\em diagonal} covariance matrix (sample $X_2$)\,:
+		\[
+		\Sigma_2 = \left[ \begin{array}{cc}
+						8000 & 0 \\
+						0    & 18500
+						\end{array} \right]
+		\]
+	%%%%%
+	\item expressed as a {\em full} covariance matrix (sample $X_3$)\,:
+		\[
+		\Sigma_3 = \left[ \begin{array}{cc}
+						8000 & 8400 \\
+						8400 & 18500
+						\end{array} \right]
+		\]
+	%%%%%
+	\end{enumerate}
+%
+Use the function \com{gausview} (\com{>> help gausview}) to plot the
+results as clouds of points in the 2-dimensional plane, and to view the
+corresponding 2-dimensional probability density functions (pdfs) in 2D and
+3D.
+
+\subsubsection*{Example\,:}
+\mat{N = 10000;}
+\mat{mu = [730 1090]; sigma\_1 = [8000 0; 0 8000];}
+\mat{X1 = randn(N,2) * sqrtm(sigma\_1) + repmat(mu,N,1);}
+\mat{gausview(X1,mu,sigma\_1,'Sample X1');}
+%
+Repeat the three previous steps for the two other Gaussians. Use the radio
+buttons to switch the plots on/off. Use the ``view'' buttons to switch
+between 2D and 3D. Use the mouse to rotate the plot.
+
+
+{\bf \noindent Note\,:} if you don't know what one of the cited {\sc Matlab}
+command does, use \\
+\mat{help {\it command}}
+to get some help. If the help doesn't make it clearer, ask the assistants.
+
+\subsubsection*{Question\,:}
+By simple inspection of 2D views of the data and of the corresponding pdf
+contours, how can you tell which sample corresponds to a spherical process,
+which sample corresponds to a pdf with a diagonal covariance, and which to
+a pdf with a full covariance~?
+
+\subsubsection*{Answer\,:}
+\expl{The cloud of points and the pdf contours corresponding to $\Sigma_1$
+are circular, because in this case the first and the second dimension of
+the vectors are independent. As a matter of fact, they have a null
+covariance\,:
+\[ {\cal E}\left[(x_{d1}-\mu_{d1})^T (x_{d2}-\mu_{d2})\right] = 0 \]
+They are {\em orthogonal} in the statistical sense, which transposes to a
+geometric sense (the expectation is a scalar product of random variables; a
+null scalar product means orthogonality). Intuitively, you can also
+consider that a null covariance means no sharing of information between the
+two dimensions\,: they can evolve independently in a Gaussian way along
+their respective axes. Besides, the variance is the same in both
+dimensions, which indicates an equivalent spread of the data along both
+axes. Hence the circular blob of data points and the name ``spherical
+process''.
+
+\medskip
+
+\tab The cloud of points and the pdf contours corresponding to $\Sigma_2$
+are elliptic, with their axes parallel to the abscissa and ordinate
+axes. This is because the first and the second dimension are still
+independent (their covariance is null again), but this time the variance is
+different along both dimensions.
+
+\medskip
+
+\tab For $\Sigma_3$, the covariance of both dimensions is not null, so the
+principal axes of the ellipses are not aligned with the abscissa and
+ordinate axes.}
+
+\pagebreak
+%%%%%%%%%
+\subsection{Gaussian modeling\,: mean and variance of a sample}
+%%%%%%%%%
+
+\subsubsection*{Useful formulas and definitions\,:}
+\begin{itemize}
+\item[-] Mean estimator\,: $\hat{\mu} = \frac{1}{N} \sum_{i=1}^{N} x_i$
+\item[-] Unbiased covariance estimator\,: $ \hat{\Sigma} = \frac{1}{N-1} \;
+\sum_{i=1}^{N} (x_i-\mu)^T (x_i-\mu) $
+\end{itemize}
+
+\subsubsection*{Experiment\,:}
+Take the set $X_3$ of 10000 points generated from ${\cal
+N}(\mu,\Sigma_3)$. Compute an estimate $\hat{\mu}$ of its mean and an
+estimate $\hat{\Sigma}$ of its variance\,:
+\begin{enumerate}
+\item with all the available points \hspace{1cm}$\hat{\mu}_{(10000)}
+=$\hspace{3.5cm}$\hat{\Sigma}_{(10000)} =$
+\vspace{0.8cm}
+\item with only 1000 points \hspace{2cm}$\hat{\mu}_{(1000)}
+=$\hspace{3.7cm}$\hat{\Sigma}_{(1000)} =$
+\vspace{0.8cm}
+\item with only 100 points \hspace{2.1cm}$\hat{\mu}_{(100)}
+=$\hspace{3.9cm}$\hat{\Sigma}_{(100)} =$
+\vspace{0.8cm}
+\end{enumerate}
+Compare the estimated value $\hat{\mu}$ with the original value of $\mu$ by
+measuring the Euclidean distance that separates them. Compare the estimated
+value $\hat{\Sigma}$ with the original value of $\Sigma_3$ by measuring the
+matrix 2-norm of their difference ($\parallel A-B \parallel_2$ constitutes
+a measure of similarity of two matrices $A$ and $B$; use {\sc Matlab}'s
+\com{norm} command).
+
+\subsubsection*{Example\,:}
+In the case of 1000 points (case 2.)\,: \\
+\mat{X = X3(1:1000,:);}
+\mat{N = size(X,1)}
+\com{>> mu\_1000 = sum(X)/N} \,\,{\it -or-}\,\, \mat{mu\_1000 = mean(X)}
+\mat{sigma\_1000 = (X - repmat(mu\_1000,N,1))' * (X - repmat(mu\_1000,N,1)) / (N-1)}
+\,\,{\it -or-}\,\, \mat{sigma\_1000 = cov(X)}
+
+\noindent
+\mat{\% Comparison of the values:}
+\mat{e\_mu =  sqrt( (mu\_1000 - mu) * (mu\_1000 - mu)' )}
+\mat{\% (This is the Euclidean distance between mu\_1000 and mu)}
+\mat{e\_sigma = norm( sigma\_1000 - sigma\_3 )}
+\com{>> \% (This is the 2-norm of the difference between sigma\_1000 and sigma\_3)}
+
+\subsubsection*{Question\,:}
+When comparing the estimated values $\hat{\mu}$ and $\hat{\Sigma}$ with the
+original values of $\mu$ and $\Sigma_3$ (using the Euclidean distance and
+the matrix 2-norm), what can you observe~?
+
+\subsubsection*{Answer\,:}
+\expl{The more points, the better the estimates. Furthermore, an accurate
+mean estimate requires less points than an accurate variance estimate. In
+general, in any data-based pattern classification technique (as opposed to
+knowledge-based techniques or expert systems), it is very important to have
+enough training examples to estimate some accurate models of the data.}
+
+\pagebreak
+%%%%%%%%%
+\subsection{Likelihood of a sample with respect to a Gaussian model}
+\label{like}
+%%%%%%%%%
+\subsubsection*{Useful formulas and definitions\,:}
+\begin{itemize}
+\item[-] {\em Likelihood}\,: the likelihood of a sample point given a
+Gaussian model (i.e. given a set of parameters $\Theta = (\mu,\Sigma)$) is
+the value of the probability density function for that point. In the case
+of Gaussian models, this amounts to compute the value of the pdf expression
+given at the beginning of section~\ref{samples}.
+\item[-] {\em Joint likelihood}\,: for a set of independent identically
+distributed (i.i.d.) points, say $X = \{ x_1, x_2, \cdots, x_N \}$, the
+joint (or total) likelihood is the product of the likelihood for each
+point. For instance, in the Gaussian case\,:
+\[ p(X|\Theta) = 
+\prod_{i=1}^{N} p(x_i|\Theta) =
+\prod_{i=1}^{N} p(x_i|\mu,\Sigma) =
+\prod_{i=1}^{N} g_{(\mu,\Sigma)}(x_i)
+\]
+\end{itemize}
+
+\subsubsection*{Experiment\,:}
+Given the 4 Gaussian models\,:
+\begin{center}
+\begin{tabular}{ccc}
+${\cal N}_1: \; \Theta_1 = \left(
+\left[\begin{array}{c}730 \\ 1090\end{array}\right],
+\left[\begin{array}{cc}8000 & 0 \\ 0 & 8000\end{array}\right]
+\right)$ & \hspace{2cm} &
+${\cal N}_2: \; \Theta_2 = \left(
+\left[\begin{array}{c}730 \\ 1090\end{array}\right],
+\left[\begin{array}{cc}8000 & 0 \\ 0 & 18500\end{array}\right]
+\right)$ \\[2em]
+${\cal N}_3: \; \Theta_3 = \left(
+\left[\begin{array}{c}730 \\ 1090\end{array}\right],
+\left[\begin{array}{cc}8000 & 8400 \\ 8400 & 18500\end{array}\right]
+\right)$ & \hspace{2cm} &
+${\cal N}_4: \; \Theta_4 = \left(
+\left[\begin{array}{c}270 \\ 1690\end{array}\right],
+\left[\begin{array}{cc}8000 & 8400 \\ 8400 & 18500\end{array}\right]
+\right)$
+\end{tabular}
+\end{center}
+\vspace{0.5em} compute the following {log-likelihoods} for the whole sample
+$X_3$ (10000 points)\,:
+
+\medskip
+\centerline{$\log p(X_3|\Theta_1)$, $\log p(X_3|\Theta_2)$, $\log
+p(X_3|\Theta_3)$ and $\log p(X_3|\Theta_4)$.}
+
+\medskip
+\noindent (First answer the following question and then look at the exemple
+given on the next page.)
+
+\vspace{-1ex}
+\subsubsection*{Question\,:}
+Why do we want to compute the {\em log-likelihood} rather than the simple
+{\em likelihood} ?
+
+\subsubsection*{Answer\,:}
+\expl{
+Computing the log-likelihood turns the product into a sum\,:
+\[
+p(X|\Theta) = \prod_{i=1}^{N} p(x_i|\Theta)
+\;\;\; \Leftrightarrow \;\;\;
+\log p(X|\Theta) = \sum_{i=1}^{N} \log p(x_i|\Theta)
+\]
+In the Gaussian case, it also avoids the computation of the exponential\,:
+\begin{eqnarray}
+p(x|\Theta) & = & \frac{1}{\sqrt{2\pi}^d \sqrt{\det\left(\Sigma\right)}}
+\, e^{-\frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu)} \nonumber \\
+\log p(x|\Theta) & = &
+- \frac{d}{2} \log \left( 2\pi \right)
+- \frac{1}{2} \log \left( \det\left(\Sigma\right) \right)
+- \frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu) \nonumber
+\end{eqnarray}
+Furthermore, since $\log(x)$ is a monotonically growing function, the
+log-likelihoods have the same relations of order as the likelihoods\,:
+\[
+p(x|\Theta_1) > p(x|\Theta_2) \;\; \Leftrightarrow \;\;
+\log p(x|\Theta_1) > \log p(x|\Theta_2)
+\]
+so they can be used directly to classify samples.
+
+\tab In a classification framework, the computation can be even more
+simplified\,: the relations of order will remain valid if we drop the
+division by 2 and the $d \log (2\pi)$ term (we have a right to drop these
+terms because they are {\em independent of the classes}). If ${\cal
+N}_1(\Theta_1)$ and ${\cal N}_2(\Theta_2)$ have the same variance, we can
+also drop the $\log (\det(\Sigma))$ term (since in this case the variance
+itself becomes independent of the classes).
+
+\tab As a summary, log-likelihoods use simpler computation but are readily
+usable for classification tasks.}
+
+\pagebreak
+\subsubsection*{Example\,:}
+\mat{N = size(X3,1)}
+\mat{mu\_1 = [730 1090]; sigma\_1 = [8000 0; 0 8000];}
+\mat{logLike1 = 0;}
+\mat{for i = 1:N;}
+\com{logLike1 = logLike1 + (X3(i,:) - mu\_1)*inv(sigma\_1)*(X3(i,:) - mu\_1)';} \\
+\com{end;} \\
+\mat{logLike1 =  - 0.5 * ( logLike1 + N*log(det(sigma\_1)) + 2*N*log(2*pi) )}
+
+\noindent Note\,: if you don't understand why the different models generate
+a different log-likelihood value for the data, use the function
+\com{gausview} to compare the relative positions of the models ${\cal
+N}_1$, ${\cal N}_2$, ${\cal N}_3$ and ${\cal N}_4$ with respect to the data
+set $X_3$, e.g.\,: \\
+%
+\mat{mu\_1 = [730 1090]; sigma\_1 = [8000 0; 0 8000];}
+\mat{gausview(X3,mu\_1,sigma\_1,'Comparison of X3 and N1');}
+
+\vspace{-\baselineskip}
+\subsubsection*{Question\,:}
+Of ${\cal N}_1$, ${\cal N}_2$, ${\cal N}_3$ and ${\cal N}_4$, which model
+``explains'' best the data $X_3$ ?  Which model has the highest number of
+parameters ?  Which model would you choose for a good compromise between
+the number of parameters and the capacity to represent accurately the
+data~?
+
+\subsubsection*{Answer\,:}
+\expl{The model ${\cal N}_3$ produces the highest likelihood for the data
+set $X_3$. So we can say that data $X_3$ is more likely to have been
+generated by model ${\cal N}_3$ than by the other models, or that ${\cal
+N}_3$ explains best the data.
+
+\tab On the other hand, model ${\cal N}_3$ has the highest number of
+parameters (2 terms for the mean, 4 non null terms for the variance). This
+may seem low in two dimensions, but the number of parameters grows
+exponentially with the dimension of the data (this phenomenon is called the
+{\em curse of dimensionality}). Also, the more parameters you have, the
+more data you need to estimate (or {\em train}) them.
+
+\tab In ``real world'' speech recognition applications, the dimensionality
+of the speech features is typically of the order of 40 (1 energy
+coefficient + 12 cepstrum coefficients + their first and second order
+derivatives = a vector of 39 coefficients). Further processing is applied
+to {\em orthogonalize} the data (e.g., cepstral coefficients can be
+interpreted as orthogonalized spectra, and hence admit quasi-diagonal
+covariance matrices).  Therefore, the compromise usually considered is to
+use models with diagonal covariance matrices, such as the model ${\cal
+N}_2$ in our example.}
+
+
+%%%%%%%%%
+%%%%%%%%%
+\section{Statistical pattern recognition}
+%%%%%%%%%
+%%%%%%%%%
+
+%%%%%%%%%
+\subsection{A-priori class probabilities}
+\label{sub:apriori}
+%%%%%%%%%
+\subsubsection*{Experiment\,:}
+Load data from file ``vowels.mat''. This file contains a database of
+simulated 2-dimensional speech features in the form of {\em artificial}
+pairs of formant values (the first and the second spectral formants,
+$[F_1,F_2]$). These artificial values represent the features that would be
+extracted from several occurrences of vowels /a/, /e/, /i/, /o/ and
+/y/\footnote{/y/ is the phonetic symbol for ``u'' like in the French word
+``{\it tutu}''.}.  They are grouped in matrices of size $N\times2$, where
+each of the $N$ lines is a training example and $2$ is the dimension of the
+features (in our case, formant frequency pairs).
+
+Supposing that the whole database covers adequately an imaginary language
+made only of /a/'s, /e/'s, /i/'s, /o/'s and /y/'s, compute the probability
+$P(q_k)$ of each class $q_k$, $k \in \{/a/,/e/,/i/,/o/,/y/\}$. What are the
+most common and the least common phoneme in the language~?
+
+\subsubsection*{Example\,:}
+\mat{clear all; load vowels.mat; whos}
+\mat{Na = size(a,1); Ne = size(e,1); Ni = size(i,1); No = size(o,1); Ny = size(y,1);}
+\mat{N = Na + Ne + Ni + No + Ny;}
+\mat{Pa = Na/N}
+\mat{Pi = Ni/N}
+etc.
+
+
+\subsubsection*{Answer\,:}
+\expl{The probability of using /a/ in this imaginary speech is 0.25.  It is
+0.3 for /e/, 0.25 for /i/, 0.15 for /o/ and 0.05 for /y/. The most common
+phoneme is therefore /e/, while the least common is /y/.}
+
+
+%%%%%%%%%
+\subsection{Gaussian modeling of classes}
+\label{gaussmod}
+%%%%%%%%%
+
+\subsubsection*{Experiment\,:}
+Plot each vowel's data as clouds of points in the 2D plane. Train the
+Gaussian models corresponding to each class (use directly the \com{mean}
+and \com{cov} commands). Plot their contours (use directly the function
+\com{plotgaus({\em mu},{\em sigma},{\em color})} where \com{{\em color} =
+[R,G,B]}).
+
+\subsubsection*{Example\,:}
+\mat{plotvow; \% Plot the clouds of simulated vowel features}
+(Do not close the obtained figure, it will be used later on.) \\
+Then compute and plot the Gaussian models\,: \\
+\mat{mu\_a = mean(a);}
+\mat{sigma\_a = cov(a);}
+\mat{plotgaus(mu\_a,sigma\_a,[0 1 1]);}
+\mat{mu\_e = mean(e);}
+\mat{sigma\_e = cov(e);}
+\mat{plotgaus(mu\_e,sigma\_e,[0 1 1]);}
+etc.
+
+\subsubsection*{Note your results below\,:}
+
+\bigskip
+\centerline{$\mu_{/a/} = $ \hfill $\Sigma_{/a/} =$ \hfill}
+
+\vspace{1cm}
+\centerline{$\mu_{/e/} = $ \hfill $\Sigma_{/e/} =$ \hfill}
+
+\vspace{1cm}
+\centerline{$\mu_{/i/} = $ \hfill $\Sigma_{/i/} =$ \hfill}
+
+\vspace{1cm}
+\centerline{$\mu_{/o/} = $ \hfill $\Sigma_{/o/} =$ \hfill}
+
+\vspace{1cm}
+\centerline{$\mu_{/y/} = $ \hfill $\Sigma_{/y/} =$ \hfill}
+
+\vspace{1.5cm}
+
+%%%%%%%%%
+\subsection{Bayesian classification}
+%%%%%%%%%
+
+\subsubsection*{Useful formulas and definitions\,:}
+\begin{itemize}
+\item[-] {\em Bayes' decision rule}\,:
+\[
+	X \in q_k \;\; \mbox{if} \;\; P(q_k|X,\Theta) \geq P(q_j|X,\Theta), \; \forall j \neq k
+\]
+This formula means\,: given a set of classes $q_k$, characterized by a set
+of known parameters $\Theta$, a set of one or more speech feature vectors
+$X$ (also called {\em observations}) belongs to the class which has the
+highest probability once we actually know (or ``see'', or ``measure'') the
+sample $X$. $P(q_k|X,\Theta)$ is therefore called the {\em a posteriori
+probability}, because it depends on having seen the observations, as
+opposed to the {\em a priori} probability $P(q_k|\Theta)$ which does not
+depend on any observation (but depends of course on knowing how to
+characterize all the classes $q_k$, which means knowing the parameter set
+$\Theta$).
+\item[-] For some classification tasks (e.g. speech recognition), it is
+more practical to resort to {\em Bayes' law}, which makes use of {\em
+likelihoods}, rather than trying to estimate directly the posterior
+probability. Bayes' law says\,:
+\[
+P(q_k|X,\Theta) = \frac{p(X|q_k,\Theta) P(q_k|\Theta)}{p(X|\Theta)}
+\] 
+where $q_k$ is a class, $X$ is a sample containing one or more feature
+vectors and $\Theta$ is the parameter set of all the class models.
+%
+\item[-] The speech features are usually considered equi-probable. Hence,
+it is considered that $P(q_k|X,\Theta)$ is proportional to $p(X|q_k,\Theta)
+P(q_k|\Theta)$ for all the classes\,:
+\[
+\forall k, \;\; P(q_k|X,\Theta) \propto p(X|q_k,\Theta) P(q_k|\Theta)
+\]
+%
+\item[-] Once again, it is more convenient to do the computation in the
+$\log$ domain\,:
+\[
+\log P(q_k|X,\Theta) \simeq \log p(X|q_k,\Theta) + \log P(q_k|\Theta)
+\]
+\end{itemize}
+
+\subsubsection*{Question\,:}
+\begin{enumerate}
+\item In our case (Gaussian models for phoneme classes), what is the
+meaning of the $\Theta$ given in the above formulas ?
+\item What is the expression of $p(X|q_k,\Theta)$, and of $\log
+p(X|q_k,\Theta)$ ?
+\item What is the definition of the probability $P(q_k|\Theta)$ ?
+\end{enumerate}
+
+\subsubsection*{Answer\,:}
+\expl{
+\begin{enumerate}
+\item In our case, $\Theta$ represents the set of all the means $\mu_k$ and
+variances $\Sigma_k$, $k \in \{/a/,/e/,/i/,/o/,/u/\}$.
+\item The expression of $p(X|q_k,\Theta)$ and of $\log p(X|q_k,\Theta)$
+correspond to the computation of the Gaussian pdf and its logarithm,
+already expressed in section~\ref{like}.
+\item The probability $P(q_k|\Theta)$ is the a-priori class probability for
+the class $q_k$ (corresponding to the parameters $\Theta_k \in \Theta$). It
+defines an absolute probability of occurrence for the class $q_k$. The
+a-priori class probabilities for our artificial phoneme classes have been
+computed in the section~\ref{sub:apriori}.
+\end{enumerate}
+}
+
+\subsubsection*{Question\,:}
+Now, we have modeled each vowel class with a Gaussian pdf (by computing
+means and variances), we know the probability $P(q_k)$ of each class in the
+imaginary language, and we assume that the speech {\em features} (as
+opposed to speech {\em classes}) are equi-probable. What is the most
+probable class $q_k$ for the speech feature points $x=(F_1,F_2)^T$ given in
+the following table ? (Compute the posterior probabilities according to the
+example given on the next page.)
+
+\medskip
+\noindent
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|} \hline
+ x & $F_1$ & $F_2$ &
+\small $\log P(q_{/a/}|x)$ & \small $\log P(q_{/e/}|x)$ &
+\small $\log P(q_{/i/}|x)$ & \small $\log P(q_{/o/}|x)$ &
+\small $\log P(q_{/y/}|x)$ & \parbox[c][3em][c]{11ex}{Most prob. \\ class} \\ \hline
+1. & 400 & 1800 & & & & & & \\ \hline
+2. & 400 & 1000 & & & & & & \\ \hline
+3. & 530 & 1000 & & & & & & \\ \hline
+4. & 600 & 1300 & & & & & & \\ \hline
+5. & 670 & 1300 & & & & & & \\ \hline
+6. & 420 & 2500 & & & & & & \\ \hline
+\end{tabular}
+\end{center}
+
+\subsubsection*{Example\,:}
+Use function \com{gloglike({\em point},{\em mu},{\em sigma})} to compute
+the likelihoods. Don't forget to add the log of the prior probability !
+E.g., for point 1. and class /a/\,: \\
+\com{>> gloglike([400,1800],mu\_a,sigma\_a) + log(Pa)}
+
+\subsubsection*{Answer\,:}
+\expl{1. /e/ \,\, 2. /y/ \,\, 3. /o/ \,\, 4. /y/ \,\, 5. /a/ \,\, 6. /i/}
+
+
+\bigskip
+%%%%%%%%%
+\subsection{Discriminant surfaces}
+\label{discr}
+%%%%%%%%%
+
+\subsubsection*{Useful formulas and definitions\,:}
+\begin{itemize}
+\item[-] {\em Discriminant function}\,: a set of functions $f_k(x)$ allows
+to classify a sample $x$ into $k$ classes $q_k$ if\,:
+\[
+x \in q_k \;\; \Leftrightarrow \;\; f_k(x,\Theta_k) \geq f_l(x,\Theta_l),
+\; \forall l \neq k
+\]
+In this case, the $k$ functions $f_k(x)$ are called discriminant functions.
+\end{itemize}
+
+\subsubsection*{Question\,:}
+What is the link between discriminant functions and Bayesian classifiers~?
+
+\subsubsection*{Answer\,:}
+\expl{The a-posteriori probability $P(q_k|x)$ that a sample $x$ belongs to
+class $q_k$ is itself a discriminant function\,:
+\begin{eqnarray}
+x \in q_k & \Leftrightarrow & P(q_k|x) \geq P(q_l|x) \; \forall l \neq k \nonumber \\
+ & \Leftrightarrow & p(x|q_k) P(q_k) \geq p(x|q_l) P(q_l) \nonumber \\
+ & \Leftrightarrow & \log p(x|q_k) + \log P(q_k) \geq \log p(x|q_l) + \log P(q_l) \nonumber
+\end{eqnarray}
+}
+
+\subsubsection*{Experiment\,:}
+%%%%%%%%%%%%
+\begin{figure}
+\centerline{\includegraphics[height=0.98\textheight]{iso.eps.gz}}
+\caption{\label{iso}Iso-likelihood lines for the Gaussian pdfs ${\cal
+N}\left(\mu_{/i/},\Sigma_{/i/}\right)$ and ${\cal N}\left(\mu_{/e/},\Sigma_{/e/}\right)$,
+then ${\cal N}\left(\mu_{/i/},\Sigma_{/e/}\right)$ and ${\cal
+N}\left(\mu_{/e/},\Sigma_{/e/}\right)$.}
+\end{figure}
+%%%%%%%%%%%%
+The iso-likelihood lines for the Gaussian pdfs ${\cal
+N}\left(\mu_{/i/},\Sigma_{/i/}\right)$ and ${\cal N}\left(\mu_{/e/},\Sigma_{/e/}\right)$,
+which we used before to model the class /i/ and the class /e/, are plotted
+on the next page (figure~\ref{iso}). On a second graph, the iso-likelihood
+lines for ${\cal N}\left(\mu_{/i/},\Sigma_{/e/}\right)$ and ${\cal
+N}\left(\mu_{/e/},\Sigma_{/e/}\right)$ (two pdfs with the same covariance matrix
+$\Sigma_{/e/}$) are represented. On these figures, use a colored pen to join
+the intersections of the level lines that correspond to equal likelihoods.
+
+\subsubsection*{Question\,:}
+What is the nature of the surface that separates class /i/ from class /e/
+when the two models have {\em different} variances ? Can you explain the
+origin of this form ?
+
+What is the nature of the surface that separates class /i/ from class /e/
+when the two models have the {\em same} variances ? Why is it different
+from the previous discriminant surface ?
+
+\subsubsection*{Answer\,:}
+\expl{
+In the case of different variances, the discriminant surface is a
+parabola. As a matter of fact, in the Gaussian case\,:
+\[
+\log p(x|\Theta)
+\simeq
+\; - \frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu) \nonumber
+\; - \frac{1}{2} \log \left( \det\left(\Sigma\right) \right)
+\]
+which is a quadratic form. Therefore, the equation\,:
+\[
+\log p(x|\Theta_1) = \log p(x|\Theta_2)
+\]
+which describes the discriminant surface is necessarily a second order
+equation. Hence, its solution describes a parabolic discriminant surface.
+
+\tab In the case where the covariance matrices are equal, the separation
+between the class 1 and the class 2 does not depend upon the covariance
+$\Sigma$ any more\,:
+\hfill {\em (Continued on next page...)}
+}
+
+\expl{
+{\bf Answer, continued\,:}
+\begin{align*}
+& & - \frac{1}{2} (x-\mu_1)^T \Sigma^{-1} (x-\mu_1)
+\; - \frac{1}{2} \log \left( \det\left(\Sigma\right) \right)
+\; & =
+\; - \frac{1}{2} (x-\mu_2)^T \Sigma^{-1} (x-\mu_2)
+\; - \frac{1}{2} \log \left( \det\left(\Sigma\right) \right)
+\\
+\\
+\Leftrightarrow & &
+- \frac{1}{2} (x-\mu_1)^T \Sigma^{-1} (x-\mu_1)
+ & =
+- \frac{1}{2} (x-\mu_2)^T \Sigma^{-1} (x-\mu_2)
+\\
+\\
+\Leftrightarrow & &
+- \frac{1}{2} x^T \Sigma^{-1} x
++ \mu_1^T \Sigma^{-1} x
+- \frac{1}{2} \mu_1^T \Sigma^{-1} \mu_1
+& =
+- \frac{1}{2} x^T \Sigma^{-1} x
++ \mu_2^T \Sigma^{-1} x
+- \frac{1}{2} \mu_2^T \Sigma^{-1} \mu_2
+\end{align*}
+
+\medskip
+Hence, the equation of the surface that separates class $q_1$ from class
+$q_2$ becomes\,:
+\[
+( \mu_1 - \mu_2 )^T \Sigma^{-1} x
+- \frac{1}{2} ( \mu_1 - \mu_2 )^T \Sigma^{-1} ( \mu_1 - \mu_2 )
+= 0
+\]
+which has a linear form. In the equal covariance case, using a Bayesian
+classifier with Gaussian densities is therefore equivalent to using
+discriminant functions of the form\,:
+\[
+f_k(x) = w_k^T x + w_{k0}
+\]
+where
+\begin{eqnarray}
+w_k^T  & = & \mu_k^T \Sigma^{-1}\nonumber \\
+w_{k0} & = & - \frac{1}{2} \mu_k^T \Sigma^{-1} \mu_k \nonumber
+\end{eqnarray}
+
+\tab As a summary, we have shown that Bayesian classifiers with Gaussian
+models separate the classes with combinations of parabolic surfaces. If the
+covariance matrices of the models are equal, the parabolic separation
+surfaces become simple hyper-planes.
+
+}
+
+\bigskip
+%%%%%%%%%
+%%%%%%%%%
+\section{Unsupervised training}
+\label{unsup}
+%%%%%%%%%
+%%%%%%%%%
+In the previous section, we have computed the models for classes /a/, /e/,
+/i/, /o/ and /y/ by knowing a-priori which training samples belongs to
+which class (we were disposing of a {\em labeling} of the training
+data). Hence, we have performed a {\em supervised training} of Gaussian
+models.  Now, suppose that we only have unlabeled training data that we
+want to separate in several classes (e.g., 5 classes) without knowing
+a-priori which point belongs to which class. This is called {\em
+unsupervised training}. Several algorithms are available for that purpose,
+among which\,: the K-means, the Viterbi-EM and the EM
+(Expectation-Maximization) algorithm.
+
+%
+%
+\newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}
+\newcommand{\RR}{\PBS\raggedright\hspace{0pt}}
+\newcommand{\RL}{\PBS\raggedleft\hspace{0pt}}
+\newcommand{\CC}{\PBS\centering\hspace{0pt}}
+\begin{sidewaystable}[p]
+\setlength{\arrayrulewidth}{1.2pt}
+\renewcommand{\arraystretch}{2}
+%\begin{center}
+\hspace{-1.5em}
+\begin{tabular}{|>{\RR}m{6em}|>{\RR}m{7.5em}|>{\CC}m{20em}|>{\RR}m{24.5em}|>{\CC}m{8em}|}
+\hline
+\centering\bf Algorithm &
+\centering\bf Parameters &
+\bf Membership measure &
+\centering\bf Update method &
+\bf Global criterion \\ \hline
+%
+Kmeans    &
+$\bullet$ mean $\mu_k$ &
+Euclidean distance \linebreak
+\[d_k(x_n)= \sqrt{(x_n-\mu_k)^T(x_n-\mu_k)}\] \linebreak
+(or the square of it)
+&
+Find the points closest to $q_k^{(old)}$, then\,:
+
+\medskip
+$\bullet$ $\mu_{k}^{(new)}$ = mean of the points closest to $q_k^{(old)}$ &
+Least squares \\ \hline
+% %
+% Kmeans w/ \linebreak Mahalanobis distance &
+% $\bullet$ mean $\mu_k$ \linebreak
+% $\bullet$ variance $\Sigma_k$ &
+% Mahalanobis distance, \linebreak (Weighted Euclidean distance)
+% \[d_k(x_n)= \sqrt{(x_n-\mu_k)^T\Sigma_k^{-1}(x_n-\mu_k)}\]
+% &
+% Find the points closest to $q_k^{(old)}$, then\,:
+
+% \medskip
+% $\bullet$ $\mu_{k}^{(new)}$ = mean of the points closest to $q_k^{(old)}$
+
+% \medskip
+% $\bullet$ $\Sigma_{k}^{(new)}$ = variance of the points closest to $q_k^{(old)}$ &
+% Minimal \linebreak spread of the data \linebreak (in a Mahalanobis distance sense) \\ \hline
+%
+Viterbi-EM &
+$\bullet$ mean $\mu_k$ \linebreak
+$\bullet$ variance $\Sigma_k$ \linebreak
+$\bullet$ priors $P(q_k|\Theta)$
+&
+Posterior probability
+\[
+d_k(x_n) = P(q_k|x_n,\Theta)
+\]
+\footnotesize
+\[
+ \propto \frac{1}{\sqrt{2\pi}^d \sqrt{\det\left(\Sigma_k\right)}}
+\, e^{-\frac{1}{2} (x_n-\mu_k)^T \Sigma_k^{-1} (x_n-\mu_k)} \cdot P(q_k|\Theta)
+\]
+\normalsize
+&
+Do Bayesian classification of each data point, then\,:
+
+\medskip
+$\bullet$ $\mu_{k}^{(new)}$ = mean of the points belonging to $q_k^{(old)}$
+
+\medskip
+$\bullet$ $\Sigma_{k}^{(new)}$ = variance of the points belonging to $q_k^{(old)}$
+
+\medskip
+$\bullet$ $P(q_k^{(new)}|\Theta^{(new)})$ = number of training points
+belonging to $q_k^{(old)}$ / total number of training points
+&
+Maximum likelihood \\ \hline
+%
+EM &
+$\bullet$ mean $\mu_k$ \linebreak
+$\bullet$ variance $\Sigma_k$ \linebreak
+$\bullet$ priors $P(q_k|\Theta)$ &
+Posterior probability
+\[
+d_k(x_n) = P(q_k|x_n,\Theta)
+\]
+\footnotesize
+\[
+ \propto \frac{1}{\sqrt{2\pi}^d \sqrt{\det\left(\Sigma_k\right)}}
+\, e^{-\frac{1}{2} (x_n-\mu_k)^T \Sigma_k^{-1} (x_n-\mu_k)} \cdot P(q_k|\Theta)
+\]
+\normalsize
+&
+Compute $P(q_k^{(old)}|x_n,\Theta^{(old)})$ (soft classification), then\,:
+
+\medskip
+$\bullet$ $\mu_{k}^{(new)} = \frac{\sum_{n=1}^{N} x_n P(q_k^{(old)}|x_n,\Theta^{(old)})}
+								  {\sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)})} $
+
+\medskip
+$\bullet$ $\Sigma_{k}^{(new)} = \frac{\sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)})
+								(x_n - \mu_k^{(new)})(x_n - \mu_k^{(new)})^T }
+							    {\sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)})} $
+
+\medskip
+$\bullet$ $P(q_k^{(new)}|\Theta^{(new)}) = \frac{1}{N} \sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)}) $ &
+Maximum likelihood \\ \hline
+\end{tabular}
+%\end{center}
+\caption{\label{algos}Characteristics of some usual unsupervised clustering algorithms.}
+\end{sidewaystable}
+%
+%
+All these algorithms are characterized by the following components\,:
+\begin{itemize}
+\item a set of models $q_k$ (not necessarily Gaussian), defined by some
+parameters $\Theta$ (means, variances, priors,...);
+\item a measure of membership, telling to which extent a data point
+``belongs'' to a model;
+\item a ``recipe'' to update the model parameters in function of the
+membership information.
+\end{itemize}
+The measure of membership usually takes the form of a measure of distance
+or the form of a measure of probability. It replaces the missing labeling
+information to permit the application of standard parameter estimation
+techniques.  It also defines implicitly a global criterion of ``goodness
+of fit'' of the models to the data, e.g.\,:
+\begin{itemize}
+\item in the case of a distance, the models that are globally closer from
+the data characterize it better;
+\item in the case of a probability measure, the models bringing a better
+likelihood for the data explain it better.
+\end{itemize}
+Table~\ref{algos} summarizes the components of each of the algorithm that
+will be studied in the following experiments. More detail will be given in
+the corresponding subsections.
+
+\pagebreak
+%%%%%%%%%
+\subsection{K-means algorithm}
+%%%%%%%%%
+\subsubsection*{Synopsis of the algorithm\,:}
+\begin{itemize}
+\item Start with $K$ initial prototypes $\mu_k$, $k=1,\cdots,K$.
+\item {\bf Do}\,:
+\begin{enumerate}
+\item For each data-point $x_n$, $n=1,\cdots,N$, compute the squared Euclidean
+distance from the $k^{th}$ prototype\,:
+\begin{eqnarray}
+\label{eq:dist}
+d_k(x_n) & = & \, \left\| x_n - \mu_k \right\|^2 \nonumber \\
+         & = & (x_n-\mu_k)^T(x_n-\mu_k)   \nonumber
+\end{eqnarray}
+\item Assign each data-point $x_n$ to its {\bf closest} prototype $\mu_k$,
+i.e. assign $x_n$ to the class $q_k$ if\,:
+\[
+d_k(x_n) \, \leq \, d_l(x_n),
+\;\; \forall l \neq k
+\]
+{\em Note}\,: using the square of the Euclidean distance for the
+classification gives the same result as using the true Euclidean distance,
+since the square root is a monotonically growing function. But the
+computational load is obviously lighter when the square root is dropped.
+\item Replace each prototype with the mean of the data-points assigned to
+the corresponding class;
+\item Go to 1.
+\end{enumerate}
+\item {\bf Until}\,: no further change occurs.
+\end{itemize}
+The global criterion defined in the present case is\,:
+\[
+	J = \sum_{k=1}^{K} \sum_{x_n \in q_k} d_k(x_n)
+\]
+and represents the total squared distance between the data and the models
+they belong to. This criterion is locally minimized by the algorithm.
+
+% Alternately, the Euclidean distance used in step 1. can be replaced by the
+% Mahalanobis distance, belonging to the class of weighted Euclidean
+% distances\,:
+% \[
+% 	d_k(x_n)= \sqrt{(x_n-\mu_k)^T\Sigma_k^{-1}(x_n-\mu_k)}
+% \]
+% where $\Sigma_k$ is the covariance of the points associated with the class
+% $q_k$.
+
+% After the convergence of the algorithm, the final clusters of points may be
+% used to make Gaussian models since we dispose of means and variances.
+
+
+\subsubsection*{Experiment\,:}
+Use the K-means explorer utility\,:
+\begin{verbatim}
+ KMEANS K-means algorithm exploration tool
+
+   Launch it with KMEANS(DATA,NCLUST) where DATA is the matrix
+   of observations (one observation per row) and NCLUST is the
+   desired number of clusters.
+
+   The clusters are initialized with a heuristic that spreads
+   them randomly around mean(DATA) with standard deviation
+   sqrtm(cov(DATA)).
+
+   If you want to set your own initial clusters, use
+   KMEANS(DATA,MEANS) where MEANS is a cell array containing
+   NCLUST initial mean vectors.
+
+   Example: for two clusters
+     means{1} = [1 2]; means{2} = [3 4];
+     kmeans(data,means);
+
+\end{verbatim}
+
+\pagebreak
+Launch it with the data sample \com{allvow}, which was part of file
+\com{vowels.mat} and gathers all the simulated vowels data. Do several runs
+with different cases of initialization of the algorithm\,:
+\begin{enumerate}
+\item 5 initial clusters determined according to the default heuristic;
+\item some initial \com{MEANS} values equal to some data points;
+\item some initial \com{MEANS} values equal to $\{\mu_{/a/}, \mu_{/e/},
+\mu_{/i/}, \mu_{/o/}, \mu_{/y/}\}$.
+\end{enumerate}
+Iterate the algorithm until its convergence. Observe the evolution of the
+cluster centers, of the data-points attribution chart and of the total
+squared Euclidean distance. (It is possible to zoom these plots\,: left
+click inside the axes to zoom $2\times$ centered on the point under the
+mouse; right click to zoom out; click and drag to zoom into an area; double
+click to reset the figure to the original). %Observe the mean and variance
+% values found after the convergence of the algorithm.
+Observe the mean values found after the convergence of the algorithm.
+
+
+\subsubsection*{Example\,:}
+\mat{kmeans(allvow,5);}
+- or - \\
+\mat{means =  \{ mu\_a, mu\_e, mu\_i, mu\_o, mu\_y \};}
+\mat{kmeans(allvow,means);}
+Enlarge the window, then push the buttons, zoom etc.
+After the convergence, use\,:\\
+\mat{for k=1:5, disp(kmeans\_result\_means\{k\}); end}
+to see the resulting means.
+
+
+\subsubsection*{Question\,:}
+\begin{enumerate}
+\item Does the final solution depend on the initialization of the
+algorithm~?
+\item Describe the evolution of the total squared Euclidean distance.
+\item What is the nature of the discriminant surfaces corresponding to a
+minimum Euclidean distance classification scheme~?
+\item Is the algorithm suitable for fitting Gaussian clusters~?
+\end{enumerate}
+
+
+\subsubsection*{Answer\,:}
+\expl{
+\begin{enumerate}
+\item The final solution depends upon the initialization of the
+algorithm.
+\item The total squared Euclidean distance decreases in a monotonic way.
+\item The minimum-distance point attribution scheme is equivalent to linear
+discriminant surfaces.
+\item The final solution of the K-means algorithm is unable to lock
+onto the original Gaussian phoneme classes.
+\end{enumerate}
+}
+
+
+%%%%%%%%%
+\subsection{Viterbi-EM algorithm for Gaussian clustering}
+%%%%%%%%%
+\subsubsection*{Synopsis of the algorithm\,:}
+\begin{itemize}
+\item Start from $K$ initial Gaussian models ${\cal N}(\mu_{k},\Sigma_{k}),
+\; k=1\cdots K$, characterized by the set of parameters $\Theta$ (i.e. the
+set of all means and variances $\mu_k$ and $\Sigma_k$, $k=1\cdots K$). Set
+the initial prior probabilities $P(q_k)$ to $1/K$.
+\item {\bf Do}\,:
+\begin{enumerate}
+\item Classify each data-point using Bayes' rule.
+
+This step is equivalent to having a set $Q$ of boolean hidden variables
+that give a labeling of the data by taking the value 1 (belongs) or 0 (does
+not belong) for each class $q_k$ and each point $x_n$. The value of $Q$
+that maximizes $p(X,Q|\Theta)$ precisely tells which is the most probable
+model for each point of the whole set $X$ of training data.
+
+Hence, each data point is assigned to its most probable cluster $q_k^{(old)}$.
+\item Update the parameters\,:
+\begin{itemize}
+\item update the means\,:
+	\[ \mu_{k}^{(new)} = \mbox{mean of the points belonging to } q_k^{(old)} \]
+\item update the variances\,:
+	\[ \Sigma_{k}^{(new)} = \mbox{variance of the points belonging to } q_k^{(old)} \]
+\item update the priors\,:
+	\[ P(q_k^{(new)}|\Theta^{(new)}) = \frac{\mbox{number of training points
+	belonging to } q_k^{(old)} }{\mbox{total number of training points}}\]
+\end{itemize}
+\item Go to 1.
+\end{enumerate}
+\item {\bf Until}\,: no further change occurs.
+\end{itemize}
+The global criterion defined in the present case is\,:
+\begin{eqnarray}
+{\cal L}(\Theta) & = & \sum_{X} P(X|\Theta) \; = \; \sum_{Q} \sum_{X} p(X,Q|\Theta) \nonumber \\
+      & = & \sum_{k=1}^{K} \sum_{x_n \in q_k} \log p(x_n|\Theta_k) \nonumber
+\end{eqnarray}
+and represents the joint likelihood of the data with respect to the models
+they belong to. This criterion is locally maximized by the algorithm.
+
+
+\subsubsection*{Experiment\,:}
+Use the Viterbi-EM explorer utility\,:
+\begin{verbatim}
+ VITERB Viterbi version of the EM algorithm
+
+   Launch it with VITERB(DATA,NCLUST) where DATA is the matrix
+   of observations (one observation per row) and NCLUST is the
+   desired number of clusters.
+
+   The clusters are initialized with a heuristic that spreads
+   them randomly around mean(DATA) with standard deviation
+   sqrtm(cov(DATA)). Their initial covariance is set to cov(DATA).
+
+   If you want to set your own initial clusters, use
+   VITERB(DATA,MEANS,VARS) where MEANS and VARS are cell arrays
+   containing respectively NCLUST initial mean vectors and NCLUST
+   initial covariance matrices. In this case, the initial a-priori
+   probabilities are set equal to 1/NCLUST.
+
+   To set your own initial priors, use VITERB(DATA,MEANS,VARS,PRIORS)
+   where PRIORS is a vector containing NCLUST a priori probabilities.
+
+   Example: for two clusters
+     means{1} = [1 2]; means{2} = [3 4];
+     vars{1} = [2 0;0 2]; vars{2} = [1 0;0 1];
+     viterb(data,means,vars);
+
+\end{verbatim}
+Launch it with the dataset \com{allvow}. Do several runs with different
+cases of initialization of the algorithm\,:
+\begin{enumerate}
+\item 5 initial clusters determined according to the default heuristic;
+\item some initial \com{MEANS} values equal to some data points, and some
+random \com{VARS} values (try for instance \com{cov(allvow)} for all the
+classes);
+\item the initial \com{MEANS}, \com{VARS} and \com{PRIORS} values found by
+the K-means algorithm.
+\item some initial \com{MEANS} values equal to $\{\mu_{/a/}, \mu_{/e/},
+\mu_{/i/}, \mu_{/o/}, \mu_{/y/}\}$, \com{VARS} values equal to \linebreak
+$\{\Sigma_{/a/}, \Sigma_{/e/}, \Sigma_{/i/}, \Sigma_{/o/}, \Sigma_{/y/}\}$,
+and \com{PRIORS} values equal to
+$[P_{/a/},P_{/e/},P_{/i/},P_{/o/},P_{/y/}]$;
+\item some initial \com{MEANS} and \com{VARS} values chosen by yourself.
+\end{enumerate}
+Iterate the algorithm until it converges. Observe the evolution of the
+clusters, of the data points attribution chart and of the total likelihood
+curve. Observe the mean, variance and priors values found after the
+convergence of the algorithm. Compare them with the values computed in
+section~\ref{gaussmod} (with supervised training).
+
+
+\subsubsection*{Example\,:}
+\mat{viterb(allvow,5);}
+- or - \\
+\mat{means =  \{ mu\_a, mu\_e, mu\_i, mu\_o, mu\_y \};}
+\mat{vars = \{ sigma\_a, sigma\_e, sigma\_i, sigma\_o, sigma\_y \};}
+\mat{viterb(allvow,means,vars);}
+Enlarge the window, then push the buttons, zoom etc.
+After convergence, use\,:\\
+\mat{for k=1:5, disp(viterb\_result\_means\{k\}); end}
+\mat{for k=1:5, disp(viterb\_result\_vars\{k\}); end}
+\mat{for k=1:5, disp(viterb\_result\_priors(k)); end}
+to see the resulting means, variances and priors.
+
+
+\subsubsection*{Question\,:}
+\begin{enumerate}
+\item Does the final solution depend on the initialization of the
+algorithm~?
+\item Describe the evolution of the total likelihood. Is it monotonic~?
+\item In terms of optimization of the likelihood, what does the final
+solution correspond to~?
+\item What is the nature of the discriminant surfaces corresponding to the
+Gaussian classification~?
+\item Is the algorithm suitable for fitting Gaussian clusters~?
+\end{enumerate}
+
+
+\subsubsection*{Answer\,:}
+\expl{
+\begin{enumerate}
+\item The final solution strongly depends upon the initialization of
+the algorithm.
+\item The total likelihood increases monotonically, which means that
+the models ``explain'' the training dataset better and better.
+\item The final solution corresponds approximately to a local maximum
+of likelihood in the sense of Bayesian classification with Gaussian
+models.
+\item As seen in section~\ref{discr}, the discriminant surfaces
+corresponding to Gaussian clusters with unequal variances have the form of
+(hyper-)parabolas.
+\item The final solution of the Viterbi-EM algorithm is able to lock
+approximately onto the simulated Gaussian phoneme classes if the number and
+the placement of the initial clusters are correctly guessed (which is {\em
+not an easy task}).
+\end{enumerate}
+}
+
+\pagebreak
+%%%%%%%%%
+\subsection{EM algorithm for Gaussian clustering}
+%%%%%%%%%
+\subsubsection*{Synopsis of the algorithm\,:}
+\begin{itemize}
+\item Start from K initial Gaussian models ${\cal N}(\mu_{k},\Sigma_{k}),
+\; k=1\cdots K$, with equal priors set to $P(q_k) = 1/K$.
+\item {\bf Do}\,:
+\begin{enumerate}
+\item {\bf Estimation step}\,: compute the probability $P(q_k^{(old)}|x_n,\Theta^{(old)})$ for
+each data point $x_n$ to belong to the class $q_k^{(old)}$\,:
+%
+\begin{eqnarray}
+P(q_k^{(old)}|x_n,\Theta^{(old)}) & = & \frac{P(q_k^{(old)}|\Theta^{(old)})
+										\cdot p(x_n|q_k^{(old)},\Theta^{(old)})}
+										{p(x_n|\Theta^{(old)})} \nonumber \\
+           & = & \frac{P(q_k^{(old)}|\Theta^{(old)}) \cdot p(x_n|\mu_k^{(old)},\Sigma_k^{(old)}) }
+                      {\sum_j P(q_j^{(old)}|\Theta^{(old)}) \cdot p(x_n|\mu_j^{(old)},\Sigma_j^{(old)}) }
+      \nonumber 
+\end{eqnarray}
+
+This step is equivalent to having a set $Q$ of continuous hidden variables,
+taking values in the interval $[0,1]$, that give a labeling of the data by
+telling to which extent a point $x_n$ belongs to the class $q_k$. This
+represents a soft classification, since a point can belong, e.g., by 60\%
+to class 1 and by 40\% to class 2 (think of Schr\"odinger's cat which is
+60\% alive and 40\% dead as long as nobody opens the box or performs
+Bayesian classification).
+%
+\item {\bf Maximization step}\,:
+	\begin{itemize}
+	\item update the means\,:
+		\[\mu_{k}^{(new)} = \frac{\sum_{n=1}^{N} x_n P(q_k^{(old)}|x_n,\Theta^{(old)})}
+								  {\sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)})} \]
+	\item update the variances\,:
+		\[\Sigma_{k}^{(new)} = \frac{\sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)})
+								(x_n - \mu_k^{(new)})(x_n - \mu_k^{(new)})^T }
+							    {\sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)})} \]
+	\item update the priors\,:
+		\[ P(q_k^{(new)}|\Theta^{(new)}) = \frac{1}{N} \sum_{n=1}^{N} P(q_k^{(old)}|x_n,\Theta^{(old)}) \]
+	\end{itemize}
+%
+In the present case, all the data points participate to the update of all
+the models, but their participation is weighted by the value of
+$P(q_k^{(old)}|x_n,\Theta^{(old)})$.
+\item Go to 1.
+\end{enumerate}
+\item {\bf Until}\,: the total likelihood increase for the training data
+falls under some desired threshold.
+\end{itemize}
+The global criterion defined in the present case is\,:
+\begin{eqnarray}
+{\cal L}(\Theta) \; = \; \log p(X|\Theta)
+				& = & \log \sum_Q p(X,Q|\Theta) \nonumber \\
+				& = & \log \sum_Q P(Q|X,\Theta) p(X|\Theta) \;\;\;\; \mbox{(Bayes)} \nonumber \\
+      			& = & \log \sum_{k=1}^{K} P(q_k|X,\Theta) p(X|\Theta) \nonumber
+\end{eqnarray}
+Applying Jensen's inequality $\left( \log \sum_j \lambda_j y_j \geq \sum_j
+\lambda_j \log y_j \mbox{ if } \sum_j \lambda_j = 1 \right)$, we
+obtain\,:
+\begin{eqnarray}
+{\cal L}(\Theta) & \approx & \sum_{k=1}^{K} P(q_k|X,\Theta) \log p(X|\Theta) \nonumber \\
+      & = & \sum_{k=1}^{K} \sum_{n=1}^{N} P(q_k|x_n,\Theta) \log p(x_n|\Theta) \nonumber
+\end{eqnarray}
+Hence, the final $J$ represents a lower boundary for the joint likelihood of
+all the data with respect to all the models. This criterion is locally
+maximized by the algorithm.
+
+
+\subsubsection*{Experiment\,:}
+Use the EM explorer utility\,:
+\begin{verbatim}
+ EMALGO EM algorithm explorer
+
+   Launch it with EMALGO(DATA,NCLUST) where DATA is the matrix
+   of observations (one observation per row) and NCLUST is the
+   desired number of clusters.
+
+   The clusters are initialized with a heuristic that spreads
+   them randomly around mean(DATA) with standard deviation
+   sqrtm(cov(DATA)*10). Their initial covariance is set to cov(DATA).
+
+   If you want to set your own initial clusters, use
+   EMALGO(DATA,MEANS,VARS) where MEANS and VARS are cell arrays
+   containing respectively NCLUST initial mean vectors and NCLUST
+   initial covariance matrices. In this case, the initial a-priori
+   probabilities are set equal to 1/NCLUST.
+
+   To set your own initial priors, use VITERB(DATA,MEANS,VARS,PRIORS)
+   where PRIORS is a vector containing NCLUST a priori probabilities.
+
+   Example: for two clusters
+     means{1} = [1 2]; means{2} = [3 4];
+     vars{1} = [2 0;0 2]; vars{2} = [1 0;0 1];
+     emalgo(data,means,vars);
+
+\end{verbatim}
+Launch it with again the same dataset \com{allvow}. Do several runs with
+different cases of initialization of the algorithm\,:
+\begin{enumerate}
+\item 5 clusters determined according to the default heuristic;
+\item some initial \com{MEANS} values equal to some data points, and some
+random \com{VARS} values (e.g. \com{cov(allvow)} for all the classes);
+\item the initial \com{MEANS} and \com{VARS} values found by the K-means algorithm.
+\item some initial \com{MEANS} values equal to $\{\mu_{/a/}, \mu_{/e/},
+\mu_{/i/}, \mu_{/o/}, \mu_{/y/}\}$, \com{VARS} values equal to \linebreak
+$\{\Sigma_{/a/}, \Sigma_{/e/}, \Sigma_{/i/}, \Sigma_{/o/}, \Sigma_{/y/}\}$,
+and \com{PRIORS} values equal to
+$[P_{/a/},P_{/e/},P_{/i/},P_{/o/},P_{/y/}]$;
+\item some initial \com{MEANS} and \com{VARS} values chosen by yourself.
+\end{enumerate}
+(If you have time, also increase the number of clusters and play again with
+the algorithm.)
+
+Iterate the algorithm until the total likelihood reaches an asymptotic
+convergence. Observe the evolution of the clusters and of the total
+likelihood curve. (In the EM case, the data points attribution chart is not
+given because each data point participates to the update of each cluster.)
+Observe the mean, variance and prior values found after the convergence of
+the algorithm. Compare them with the values found in
+section~\ref{gaussmod}.
+
+
+\subsubsection*{Example\,:}
+\mat{emalgo(allvow,5);}
+- or - \\
+\mat{means =  \{ mu\_a, mu\_e, mu\_i, mu\_o, mu\_y \};}
+\mat{vars = \{ sigma\_a, sigma\_e, sigma\_i, sigma\_o, sigma\_y \};}
+\mat{emalgo(allvow,means,vars);}
+Enlarge the window, then push the buttons, zoom etc.
+After convergence, use\,:\\
+\mat{for k=1:5, disp(emalgo\_result\_means\{k\}); end}
+\mat{for k=1:5, disp(emalgo\_result\_vars\{k\}); end}
+\mat{for k=1:5, disp(emalgo\_result\_priors(k)); end}
+to see the resulting means, variances and priors.
+
+
+\subsubsection*{Question\,:}
+\begin{enumerate}
+\item Does the final solution depend on the initialization of the
+algorithm~?
+\item Describe the evolution of the total likelihood. Is it monotonic~?
+\item In terms of optimization of the likelihood, what does the final
+solution correspond to~?
+\item Is the algorithm suitable for fitting Gaussian clusters~?
+\end{enumerate}
+
+
+\subsubsection*{Answer\,:}
+\expl{
+\begin{enumerate}
+\item Here again, the final solution depends upon the initialization
+of the algorithm.
+\item Again, the total likelihood always increases monotonically.
+\item The final solution corresponds to a local maximum of likelihood
+in the sense of Bayesian classification with Gaussian models.
+\item The final solution of the EM algorithm is able to lock
+perfectly onto the Gaussian phoneme clusters, but only if the number and
+the placement of the initial clusters are correctly guessed (which, once
+again, is {\em not an easy task}).
+
+\tab In practice, the initial clusters are usually set to the K-means
+solution (which, as you have seen, may not be an optimal
+guess). Alternately, they can be set to some ``well chosen'' data points.
+\end{enumerate}
+}
+
+\vfill
+%%%%%%%%%
+%%%%%%%%%
+\section*{After the lab...}
+%%%%%%%%%
+%%%%%%%%%
+This lab manual can be kept as additional course material. If you want to
+browse the experiments again, you can use the script\,:
+
+\noindent \com{>> lab1demo}
+
+\noindent
+which will automatically redo all the computation and plots for you (except
+those of section~\ref{unsup}).
+
+
+\end{document}

@@ -1,0 +1,40 @@
+close all;clear;
+
+fdata = speech_signal_observation('f_s1_t1_a', 1, 'Utterance /a/ of female speaker 1');pause;
+
+fstdata = select_speech(fdata, 15001, 15480, 2, '30 msec Speech Signal of Utterance /a/ Spoken by Female Speaker 1');pause;
+
+fourierSpectrum(fstdata, 512, 4, 'Fourier spectrum of 30 msec speech signal of utterance /a/ of female speaker 1');pause;
+
+fcorrdata = autocorrelation(fstdata, 256, 3,  ['Autocorrelation of order 256 of the 30 msec speech signal of utterance /a/ of female speaker 1');pause;
+  
+fourierSpectrum(fstdata, 512, 4,  'Fourier spectrum of 30 msec speech signal of utterance /a/ of female speaker 1');pause;
+
+plotSpectrogram(fdata, 64, hamming(64), 16000, 6, 'wide band spectrogram of the utterance /a/ of female speaker 1');pause;
+
+plotSpectrogram(fdata, 1024, hamming(1024), 16000, 7,  'narrow band spectrogram of the utterance /a/ of female speaker 1' );pause;
+
+lpSpectrum(fstdata, 14, 1, 512, 16000, 8, 'Linear Prediction Spectrum of the short-time signal fstdata');pause;
+
+residual = lpResidual(fstdata, 480, 10, 9,  'LP Residual Signal');pause;
+
+autocorrelation(residual, 256, 10, 'Autocorrelation of LP Residual signal');pause;
+
+lpSpectrum Sounds(1);pause;
+
+speakerVariation('f_s2_t1_a', 'f_s2_t2_a', 'f_s2_t3_a',14001, 14480, 10001, 10480, 12481, 12960, 1);pause;
+
+speakerVariation('f_s1_t1_a', 'm_s2_t1_a', 'c_s1_t1_a', 15001,
+15480, 9001, 9480, 12481, 12960, 1);pause;
+
+%The sentence spoken is an interrogative sentence, Where are you from?
+sift('m_s1_i_sen1' , 480, 160, 10, 16000, 1,  'Pitch contour of interogative sentence spoken by male speaker 1' );pause;
+
+%The sentence spoken is a declarative sentence,
+sift('m\_s1\_d\_sen1', 480, 160, 10, 16000, 3, 'Pitch contour of declarative sentence spoken by male speaker 1');pause;
+
+% pitch contour analysis - different speaker
+sift('m\_s2\_i\_sen1', 480, 160, 10, 16000, 5, 'Pitch contour of interogative sentence spoken by male speaker 2');pause;
+sift('m\_s2\_d\_sen1', 480, 160, 10, 16000, 7, 'Pitch contour of declarative sentence spoken by male speaker 2');
+
+

@@ -1,0 +1,2 @@
+fdata = speech_signal_observation('f_s1_t1_a', 1, 'Utterance
+/a/ of female speaker 1');
